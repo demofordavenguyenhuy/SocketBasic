@@ -33,7 +33,7 @@ function handler (req, res) {
 * Chuyển qua lại giữa các room, Log out nếu muốn kết thúc chat. 
 
 ![interface](interface.png)
-## 3. Working flow
+## 3. Phương thức
 #### *Client và Server giao tiếp với nhau bởi việc gửi và tiếp nhận event*
 #### *Socket.io sử dụng hai phương thức chính để giao tiếp giữa server(index.js) và client (index.html)*
 
