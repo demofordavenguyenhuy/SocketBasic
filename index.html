@@ -91,7 +91,6 @@
       // Announce new friend join your room.
       socket.on('joined', (data)=>{
          
-         $('#chatbox').val("");
          $('#chatbox').append(`\n ${data.name} joined the room!`);
          
          $('#list-friends').html("");
