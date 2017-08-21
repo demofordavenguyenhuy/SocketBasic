@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset="utf-8" />
+      <title>Socket.io</title>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+      <script src="/socket.io/socket.io.js"></script>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <style type="text/css">
+         input, textarea, button{
+            border-radius: 0 !important;
+         }
+         textarea{
+            height: 300px !important;
+         }
+         .btn{
+            margin: 10px 0;
+         }
+         .col-md-4{
+            padding: 0;
+         }
+         .col-md-6{
+            padding-right: 0;
+         }
+         .container{
+            padding-top: 30px;
+         }
+         .list-group-item{
+            border-radius: 0 !important;
+         }
+         li{
+            cursor: pointer;
+         }
+         li.active{
+            background-color: #aaa !important;
+            border: 1px solid #bbb !important;
+            color: #fff !important;
+         }
+         p{
+            margin: 0;
+            padding: 8px 0;
+            font-size: 15px;
+            text-align: center;
+            background-color: #f0ad4e;
+            color: #fff;
+         }
+         h3{
+            margin-bottom: 20px;
+         }
+      </style>
+   </head>
+   <body>
+   <div class="container">
+   <h3>Welcome to Chat App</h3>
+   <div class="row">
+      <div class="form-group col-md-6" >
+         <input class="form-control" name="name" placeholder="type your name..." id="name">
+         <button onclick="register()" class="btn btn-warning" id="register" >Join now</button>
+      </div>
+   </div>
+      
+      <div class="row">
+         <div class="col-md-2">
+            <p>Chat rooms</p>
+            <ul class="list-group">
+               <li id="room_1" class="list-group-item" onclick="changeRoom(this)">room_1</li>
+               <li id="room_2" class="list-group-item" onclick="changeRoom(this)">room_2</li>
+               <li id="room_3" class="list-group-item" onclick="changeRoom(this)">room_3</li>
+            </ul>
+            <p>Roomates</p>
+            <ul class="list-group" id='list-friends'>
+            
+            </ul>
+         </div>
+         <div class="col-md-4" id="chat-content">
+            <textarea id="chatbox" class="form-control" disabled="disabled"></textarea>
+            <input disabled="disabled" id='chat' name="chat" class="form-control" placeholder="Type your message..."/>
+            <button disabled="disabled" class="btn btn-danger btn-lg" id="btn" onclick="sendChat()">Send</button>
+         </div>
+      </div>
+   </div>
+   <script>
+      let registered = false,
+            name = "",
+            room = "room_1",
+            toId= '';
+
+      // Set up
+      var socket = io('http://localhost:3001');
+
+      // Announce new friend join your room.
+      socket.on('joined', (data)=>{
+         
+         $('#chatbox').val("");
+         $('#chatbox').append(`\n ${data.name} joined the room!`);
+         
+         $('#list-friends').html("");
+         data.mems.forEach(mem =>{
+            $('#list-friends').append(`<li id=${mem.id} class="list-group-item" onclick='connectID(this)'>${mem.name}</li>`);
+         });
+      })
+
+      //Announce a friend leave you room
+      socket.on('leaved', (data)=>{
+         $('#chatbox').append(`\n  ${data.name} leaved the room!`);
+         $('#list-friends').html("");
+         
+         data.mems.forEach(mem =>{
+            $('#list-friends').append(`<li id=${mem.id} class="list-group-item" onclick='connectID(this)'>${mem.name}</li>`);
+         });
+      })
+
+      //Receive and show new message
+      socket.on('news', (data)=>{
+         $("#chatbox").append("\n" +data.name+": "+data.msg);
+      });
+
+      //new friend
+      socket.on('toYou', data => {
+         $("#chatbox").append("\n" +data.name+": "+data.msg);
+         toId = data.id;
+      });
+
+      // Function send a message to server.
+      function sendChat(){
+         let message = $('#chat').val();
+
+         if(toId==''){
+            socket.emit("chat", { msg : message, name : name, room : room });
+         } else{
+            socket.emit('chatToId', { msg : message, name : name, id : toId, info : socket.id  });
+         }
+         
+
+         $('#chatbox').append('\nme: '.concat(message));
+         $("#chat").val("");
+      }
+
+      //Function for registering and logging out
+      function register(){
+
+         //Log In
+         if(!registered && $("#name").val()){
+
+            //Enable typing and sending
+            $("#chat-content *").attr("disabled", false);
+            
+            //Get user name
+            name = $("#name").val();
+
+            $("#name").attr("disabled", true);
+            $("#register").html("Log out");
+            
+            //registered
+            registered = true;
+            
+            //Joine default room (room 1)
+            joinLeave('joined', name, room );
+            $('#room_1').addClass('active');
+
+         } 
+         // Log out
+         else {
+
+            //disable typing and sending
+            $("#chat-content *").attr("disabled", true);
+            $("#name").attr("disabled", false);
+
+            // username = ''
+            $("#name").val("");
+            $("#register").html("Join now");
+            registered = false;
+            $('#chatbox').val('');
+
+            //Send request to leave current room
+            joinLeave('leaved', name, room);
+
+            reset();
+         }
+      }
+
+      // Function leave and join a room
+      function joinLeave(type, name, room){
+            socket.emit(type, { name : name, room : room, id : socket.id});
+            toId = '';
+      }
+
+      //Function click and change room
+      function changeRoom(item){
+            let val = $(item).text();
+            if(val !== room){
+               joinLeave("leaved", name, room);
+               room = val;
+               joinLeave('joined', name, room);
+            } else {
+               alert("You already joined this room!");
+            }
+
+            $('ul li').removeClass('active');
+            toId = '';
+            $(item).addClass('active');
+      }
+
+      //Click to chat to a people
+      function connectID(item){
+         toId = $(item).attr('id');
+      }
+
+      // function reset
+      function reset(){
+         registered = false;
+         name = "";
+         room = "room_1";
+         toId= '';
+         $("ul li").removeClass('active');
+      }
+   </script>
+   </body>
+</html>
