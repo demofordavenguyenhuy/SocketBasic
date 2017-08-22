@@ -4,7 +4,7 @@
 ```javascript
 cd SocketBasic
 npm install
-npm start
+node index
 ```
 
 ## 1. Tạo server bằng NodeJS và kết nối với Socket.io
