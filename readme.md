@@ -1,14 +1,13 @@
 # Bài Tập Socket.IO cơ bản
 ### *Xây dựng ứng dụng chat đơn giản với NodeJS và Socket.io*
 
-### Demo (terminal)
 ```javascript
-git clone  https://github.com/DaveNguyenHuy/SocketBasic.git
+cd SocketBasic
 npm install
 npm start
 ```
 
-## 1. Tạo server bằng NodeJS và kết nối với Socket.io (index.js)
+## 1. Tạo server bằng NodeJS và kết nối với Socket.io
 
 ```javascript
 var app = require('http').createServer(handler);
@@ -32,7 +31,7 @@ function handler (req, res) {
   });
 }
 ```
-## 2. Giao diện ứng dụng ( index.html )
+## 2. Giao diện ứng dụng
 ### Chức năng
 * Nhập tên (đăng ký) để được tham gia phòng chat ( room default )
 * Có thể chọn chat theo room hoặc chat đến 1 cá nhân trong room (Roomates)
