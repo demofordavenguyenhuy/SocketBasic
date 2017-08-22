@@ -1,6 +1,12 @@
 # Bài Tập Socket.IO cơ bản
 ### *Xây dựng ứng dụng chat đơn giản với NodeJS và Socket.io*
 
+### Demo (terminal)
+```javascript
+git clone  https://github.com/DaveNguyenHuy/SocketBasic.git
+npm install
+npm st
+```
 
 ## 1. Tạo server bằng NodeJS và kết nối với Socket.io (index.js)
 
